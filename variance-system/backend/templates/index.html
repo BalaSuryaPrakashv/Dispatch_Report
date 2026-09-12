@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dispatch Manifest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #120d09;
+    --bg: #1c1712;
+    --paper: #f3ead7;
+    --paper-line: #d8c9a8;
+    --ink: #f7f2e6;
+    --ink-dim: #ab9c84;
+    --stamp: #d14e30;
+    --stamp-glow: rgba(209,78,48,0.35);
+    --ok: #7fa864;
+    --ok-dim: #33401f;
+    --warn: #e08a4f;
+    --warn-dim: #4a2f16;
+    --line: #4a3d2c;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse 1600px 900px at 15% -15%, #2e2317 0%, transparent 55%),
+      radial-gradient(ellipse 1200px 800px at 100% 10%, #241c14 0%, transparent 60%),
+      repeating-linear-gradient(135deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 54px),
+      var(--bg-deep);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, serif;
+    overflow-x: hidden;
+  }
+
+  /* ---- Hazard marquee strip ---- */
+  .marquee {
+    width: 100%;
+    overflow: hidden;
+    background: var(--stamp);
+    padding: 7px 0;
+    white-space: nowrap;
+  }
+  .marquee-track {
+    display: inline-block;
+    animation: scroll 22s linear infinite;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    color: var(--bg-deep);
+  }
+  .marquee-track span { padding: 0 1.2em; }
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: clamp(32px, 6vw, 76px) clamp(20px, 5vw, 56px) 100px;
+    position: relative;
+  }
+
+  /* watermark stamp */
+  .watermark {
+    position: absolute;
+    top: 6%;
+    right: -4%;
+    font-family: "Bebas Neue", sans-serif;
+    font-size: clamp(6rem, 22vw, 15rem);
+    color: rgba(247,242,230,0.035);
+    line-height: 0.8;
+    letter-spacing: 0.02em;
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+    transform: rotate(-6deg);
+  }
+
+  .content { position: relative; z-index: 1; }
+
+  /* ---- Header ---- */
+  .letterhead {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+    border-bottom: 4px solid var(--ink);
+    padding-bottom: clamp(16px, 3vw, 26px);
+    margin: clamp(28px, 5vw, 48px) 0 8px;
+  }
+  .letterhead h1 {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: clamp(3.2rem, 9vw, 7rem);
+    letter-spacing: 0.03em;
+    margin: 0;
+    line-height: 0.85;
+  }
+  .letterhead .tag {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: clamp(0.72rem, 1vw, 0.9rem);
+    color: var(--ink-dim);
+    text-align: right;
+    line-height: 1.7;
+  }
+  .letterhead .tag b { color: var(--stamp); font-weight: 600; }
+
+  .sub {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+    color: var(--ink-dim);
+    margin: clamp(18px, 3vw, 28px) 0 clamp(44px, 6vw, 64px);
+    max-width: 640px;
+  }
+  .sub strong { color: var(--ink); }
+
+  /* ---- Upload panel ---- */
+  .stepper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(20px, 3vw, 36px);
+    margin-bottom: clamp(36px, 5vw, 52px);
+  }
+  @media (max-width: 720px) {
+    .stepper { grid-template-columns: 1fr; }
+  }
+
+  .dropzone {
+    position: relative;
+    background: var(--paper);
+    color: #26201a;
+    border-radius: 4px;
+    padding: clamp(34px, 4vw, 50px) clamp(28px, 3vw, 40px) clamp(30px, 3vw, 36px);
+    min-height: clamp(220px, 24vw, 300px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 18px 46px rgba(0,0,0,0.4);
+    transform: rotate(var(--tilt, -0.5deg));
+    transition: transform 0.28s cubic-bezier(.2,.9,.3,1.2), box-shadow 0.28s ease;
+    border: 1px solid var(--paper-line);
+  }
+  .dropzone::before {
+    content: "";
+    position: absolute;
+    inset: 10px;
+    border: 1.5px dashed #b9a67c;
+    pointer-events: none;
+    border-radius: 2px;
+  }
+  #dz2 { --tilt: 0.6deg; }
+  .dropzone:hover { transform: rotate(0deg) translateY(-4px) scale(1.01); box-shadow: 0 24px 56px rgba(0,0,0,0.48); }
+  .dropzone.drag { transform: rotate(0deg) scale(1.035); box-shadow: 0 28px 60px rgba(0,0,0,0.5); }
+  .dropzone.filled { border-color: var(--ok); }
+  .dropzone.filled::after {
+    content: "✓ loaded";
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--ok-dim);
+    background: #e2ecd9;
+    padding: 3px 10px;
+    border-radius: 3px;
+  }
+  .dropzone input { display: none; }
+  .dz-num {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: clamp(2.6rem, 5vw, 3.6rem);
+    color: rgba(38,32,26,0.14);
+    position: absolute;
+    top: 6px;
+    left: 14px;
+    line-height: 1;
+  }
+  .dz-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: clamp(0.7rem, 1vw, 0.8rem);
+    letter-spacing: 0.05em;
+    color: #7a6a50;
+    display: block;
+    margin-bottom: 10px;
+  }
+  .dz-file {
+    font-family: "Source Serif 4", Georgia, serif;
+    font-size: clamp(1.3rem, 2.4vw, 1.75rem);
+    font-weight: 600;
+    word-break: break-word;
+    display: block;
+    line-height: 1.2;
+  }
+  .dz-hint {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: clamp(0.75rem, 1vw, 0.85rem);
+    color: #9c8b6c;
+    margin-top: 8px;
+    display: block;
+  }
+
+  /* ---- Stamp button ---- */
+  .stamp-btn-wrap { text-align: center; margin: clamp(20px, 3vw, 32px) 0 clamp(16px, 3vw, 24px); }
+  button.run {
+    position: relative;
+    font-family: "Bebas Neue", sans-serif;
+    font-size: clamp(1.6rem, 3vw, 2.3rem);
+    letter-spacing: 0.06em;
+    padding: clamp(18px, 2.4vw, 26px) clamp(48px, 6vw, 76px);
+    background: transparent;
+    color: var(--stamp);
+    border: 4px solid var(--stamp);
+    border-radius: 6px;
+    cursor: pointer;
+    transform: rotate(-1.5deg);
+    box-shadow: 0 0 0 0 var(--stamp-glow);
+    transition: transform 0.12s ease, background 0.12s ease, color 0.12s ease, box-shadow 0.3s ease;
+  }
+  button.run:not(:disabled):hover {
+    transform: rotate(-1.5deg) scale(1.04);
+    box-shadow: 0 0 40px 4px var(--stamp-glow);
+  }
+  button.run:not(:disabled):active,
+  button.run.stamping {
+    transform: rotate(-1.5deg) scale(0.88);
+    background: var(--stamp);
+    color: var(--bg-deep);
+  }
+  button.run:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: var(--ink-dim);
+    color: var(--ink-dim);
+    box-shadow: none;
+  }
+
+  /* ---- Processing log ---- */
+  .log {
+    margin: clamp(40px, 6vw, 64px) auto 0;
+    max-width: 560px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: clamp(0.9rem, 1.2vw, 1.05rem);
+    display: none;
+    border-left: 3px solid var(--line);
+    padding-left: 20px;
+  }
+  .log.show { display: block; }
+  .log-line {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 7px 0;
+    color: var(--ink-dim);
+    opacity: 0;
+    transform: translateX(-8px);
+    animation: lineIn 0.35s ease forwards;
+  }
+  .log-line .mark {
+    display: inline-block;
+    width: 18px;
+    color: var(--ok);
+    transform: scale(0);
+    animation: markStamp 0.28s ease forwards;
+    animation-delay: 0.2s;
+  }
+  .log-line.done { color: var(--ink); }
+  @keyframes lineIn { to { opacity: 1; transform: translateX(0); } }
+  @keyframes markStamp {
+    0% { transform: scale(0) rotate(-25deg); }
+    60% { transform: scale(1.4) rotate(-25deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
+
+  .status-err {
+    margin: clamp(20px, 3vw, 28px) auto 0;
+    max-width: 560px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.9rem;
+    color: var(--warn);
+    display: none;
+    text-align: center;
+  }
+  .status-err.show { display: block; }
+
+  /* ---- Report / result ---- */
+  .report {
+    margin-top: clamp(48px, 7vw, 72px);
+    padding-top: clamp(30px, 4vw, 40px);
+    border-top: 2px dashed var(--line);
+    display: none;
+  }
+  .report.show { display: block; animation: fadeUp 0.5s ease; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .report h2 {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: clamp(0.8rem, 1.1vw, 0.92rem);
+    letter-spacing: 0.05em;
+    color: var(--ink-dim);
+    margin: 0 0 16px;
+    font-weight: 500;
+  }
+  .sites {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .chip {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: clamp(0.8rem, 1vw, 0.9rem);
+    padding: 6px 13px;
+    border-radius: 4px;
+    background: var(--ok-dim);
+    color: #d3e6c2;
+    border: 1px solid #55673f;
+    opacity: 0;
+    animation: chipIn 0.3s ease forwards;
+  }
+  .chip.miss { background: var(--warn-dim); color: #f3cfae; border-color: #7a4f2c; }
+  @keyframes chipIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .download {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 8px;
+    padding: clamp(15px, 2vw, 19px) clamp(26px, 3vw, 34px);
+    background: var(--stamp);
+    color: var(--bg-deep);
+    text-decoration: none;
+    border-radius: 5px;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600;
+    font-size: clamp(0.95rem, 1.2vw, 1.1rem);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 10px 24px rgba(209,78,48,0.28);
+  }
+  .download:hover { transform: translateY(-3px); box-shadow: 0 16px 34px rgba(209,78,48,0.4); }
+</style>
+</head>
+<body>
+
+<div class="marquee">
+  <div class="marquee-track">
+    <span>PROJECTION</span><span>&times;</span><span>DISPATCH</span><span>&mdash;</span>
+    <span>VARIANCE COMPUTED PER SITE</span><span>&mdash;</span>
+    <span>PROJECTION</span><span>&times;</span><span>DISPATCH</span><span>&mdash;</span>
+    <span>VARIANCE COMPUTED PER SITE</span><span>&mdash;</span>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="watermark">MANIFEST</div>
+
+  <div class="content">
+    <div class="letterhead">
+      <h1>Dispatch<br>Manifest</h1>
+      <div class="tag">FORM <b>VR&#8209;01</b><br>PROJECTION &times; DISPATCH<br>VARIANCE ENGINE</div>
+    </div>
+    <p class="sub">Upload both files and this builds one workbook: every site matched, <strong>Projection / Dispatch / Variance</strong> laid out side by side, totals tallied at the end.</p>
+
+    <form id="form">
+      <div class="stepper">
+        <label class="dropzone" id="dz1">
+          <span class="dz-num">01</span>
+          <span class="dz-label">PROJECTION FILE</span>
+          <span class="dz-file" data-empty="Drop file or click to browse">Drop file or click to browse</span>
+          <span class="dz-hint">planned qty per site &middot; .xlsx</span>
+          <input type="file" id="projection_file" accept=".xlsx" required>
+        </label>
+        <label class="dropzone" id="dz2">
+          <span class="dz-num">02</span>
+          <span class="dz-label">DISPATCH FILE</span>
+          <span class="dz-file" data-empty="Drop file or click to browse">Drop file or click to browse</span>
+          <span class="dz-hint">actual dispatched qty &middot; .xlsx</span>
+          <input type="file" id="dispatch_file" accept=".xlsx" required>
+        </label>
+      </div>
+
+      <div class="stamp-btn-wrap">
+        <button type="submit" class="run" id="runBtn">Build Report</button>
+      </div>
+    </form>
+
+    <div class="log" id="log"></div>
+    <div class="status-err" id="statusErr"></div>
+
+    <div class="report" id="report">
+      <h2>matched sites</h2>
+      <div class="sites" id="matchedChips"></div>
+      <div id="missingBlock" style="display:none;">
+        <h2>not found in dispatch file</h2>
+        <div class="sites" id="missingChips"></div>
+      </div>
+      <a class="download" id="downloadLink" href="#" download="variance_report.xlsx">&#8595; Download variance_report.xlsx</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function wireDropzone(dzId, inputId) {
+  const dz = document.getElementById(dzId);
+  const input = document.getElementById(inputId);
+  const label = dz.querySelector('.dz-file');
+  const emptyText = label.dataset.empty;
+
+  dz.addEventListener('click', () => input.click());
+  ['dragover', 'dragenter'].forEach(evt =>
+    dz.addEventListener(evt, e => { e.preventDefault(); dz.classList.add('drag'); })
+  );
+  ['dragleave', 'drop'].forEach(evt =>
+    dz.addEventListener(evt, e => { e.preventDefault(); dz.classList.remove('drag'); })
+  );
+  dz.addEventListener('drop', e => {
+    if (e.dataTransfer.files.length) {
+      input.files = e.dataTransfer.files;
+      updateLabel();
+    }
+  });
+  input.addEventListener('change', updateLabel);
+
+  function updateLabel() {
+    if (input.files.length) {
+      label.textContent = input.files[0].name;
+      dz.classList.add('filled');
+    } else {
+      label.textContent = emptyText;
+      dz.classList.remove('filled');
+    }
+  }
+}
+wireDropzone('dz1', 'projection_file');
+wireDropzone('dz2', 'dispatch_file');
+
+const form = document.getElementById('form');
+const runBtn = document.getElementById('runBtn');
+const logEl = document.getElementById('log');
+const statusErr = document.getElementById('statusErr');
+const reportEl = document.getElementById('report');
+const matchedChips = document.getElementById('matchedChips');
+const missingBlock = document.getElementById('missingBlock');
+const missingChips = document.getElementById('missingChips');
+const downloadLink = document.getElementById('downloadLink');
+
+const STEPS = [
+  'reading projection file',
+  'reading dispatch file',
+  'matching site headers',
+  'aligning items by name',
+  'computing variance',
+];
+
+function runLogSequence() {
+  logEl.innerHTML = '';
+  logEl.classList.add('show');
+  let resolveDone;
+  const donePromise = new Promise(res => { resolveDone = res; });
+  let i = 0;
+  function nextStep() {
+    if (i >= STEPS.length) { resolveDone(); return; }
+    const line = document.createElement('div');
+    line.className = 'log-line';
+    line.innerHTML = `<span class="mark">&#10003;</span><span>${STEPS[i]}</span>`;
+    logEl.appendChild(line);
+    setTimeout(() => line.classList.add('done'), 250);
+    i++;
+    setTimeout(nextStep, 260);
+  }
+  nextStep();
+  return donePromise;
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const f1 = document.getElementById('projection_file').files[0];
+  const f2 = document.getElementById('dispatch_file').files[0];
+  if (!f1 || !f2) return;
+
+  runBtn.disabled = true;
+  runBtn.classList.add('stamping');
+  setTimeout(() => runBtn.classList.remove('stamping'), 180);
+  statusErr.classList.remove('show');
+  reportEl.classList.remove('show');
+
+  const fd = new FormData();
+  fd.append('projection_file', f1);
+  fd.append('dispatch_file', f2);
+
+  const logSequence = runLogSequence();
+  const fetchPromise = fetch('/api/process', { method: 'POST', body: fd });
+
+  try {
+    const [res] = await Promise.all([fetchPromise, logSequence]);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Something went wrong.' }));
+      throw new Error(err.error || 'Something went wrong.');
+    }
+    const reportB64 = res.headers.get('X-Match-Report');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    downloadLink.href = url;
+
+    if (reportB64) {
+      const report = JSON.parse(atob(reportB64));
+      matchedChips.innerHTML = report.matched_sites
+        .map((s, idx) => `<span class="chip" style="animation-delay:${idx * 0.03}s">${s}</span>`)
+        .join('');
+      if (report.unmatched_sites.length) {
+        missingBlock.style.display = 'block';
+        missingChips.innerHTML = report.unmatched_sites
+          .map((s, idx) => `<span class="chip miss" style="animation-delay:${idx * 0.03}s">${s}</span>`)
+          .join('');
+      } else {
+        missingBlock.style.display = 'none';
+      }
+    }
+    reportEl.classList.add('show');
+  } catch (err) {
+    statusErr.textContent = err.message;
+    statusErr.classList.add('show');
+  } finally {
+    runBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
