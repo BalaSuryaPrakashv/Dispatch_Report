@@ -233,7 +233,20 @@
   @media (max-width: 720px) {
     .steps { flex-direction: column; gap: 24px; }
   }
-  .step { display: flex; gap: 14px; align-items: flex-start; flex: 1; }
+    .step {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    flex: 1;
+    padding: 10px 14px;
+    margin: -10px -14px;
+    border-radius: 12px;
+    background: transparent;
+    transition: background 0.25s ease;
+  }
+  .step.active {
+    background: rgba(239, 106, 31, 0.1);
+  }
   .step-num {
     width: 34px; height: 34px;
     border-radius: 50%;
@@ -342,7 +355,15 @@
     </div>
 
     <div class="build-wrap">
-      <button type="submit" class="run" id="runBtn">▮▮▮ Build Analysis →</button>
+      <button type="submit" class="run" id="runBtn">
+    <svg width="22" height="22" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="1" y="11" width="4" height="6" rx="1" fill="currentColor"/>
+    <rect x="7" y="7" width="4" height="10" rx="1" fill="currentColor"/>
+    <rect x="13" y="2" width="4" height="15" rx="1" fill="currentColor"/>
+  </svg>
+  Build Analysis
+  <span>→</span>
+</button>
     </div>
   </form>
 
